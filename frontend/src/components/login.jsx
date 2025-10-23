@@ -1,8 +1,43 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
+import SignUp from './signup';
+
 
 export default function Login() {
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault(); 
+        console.log('aaaa')
+        try {
+        const response = await fetch('http://localhost:5000/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+        console.log(data)
+        if (response.ok) {
+            console.log('Login exitoso:', data);
+            navigate("/chat");
+        } else {
+            setError(data.message || 'Login fallido');
+        }
+        } catch (err) {
+        console.error(err);
+        setError('Error al conectar con el servidor');
+        }
+    };
+
+
     return(
-            
+        
     <div className="flex flex-col md:flex-row min-h-screen">
         <div className="bg-blue-500 text-white p-8 md:p-12 md:w-1/2 relative overflow-hidden">
         <div className="z-10 relative">
@@ -55,9 +90,13 @@ export default function Login() {
         <div className="p-8 md:p-12 md:w-1/2 flex items-center justify-center">
         <div className="w-full max-w-md bg-white rounded-3xl shadow-lg p-8">
             <div className="text-right mb-4">
-            <span className="text-gray-500">No Account?</span>
-            <a href="#" className="text-blue-500 font-medium">Sign up</a>
+            <span className="text-gray-500">No Account? </span>
+            <Link to="/signup" className="text-blue-500 font-medium hover:underline">
+                Sign up
+            </Link>
             </div>
+          
+
 
             <div className="mb-8">
             <p className="text-gray-600 mb-1">
@@ -104,21 +143,21 @@ export default function Login() {
             </div>
             </div>
 
-            <form>
+            <form onSubmit={handleSubmit}>
             <div className="space-y-6">
                 <div className="space-y-2">
-                <label for="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                     Enter your username or email address
                     </label>
-                <input id="email" type="text" placeholder="Username or email address"
+                <input id="email" type="text" value={email} onChange={(e) => setEmail(e.target.value)}placeholder="Username or email address"
                     className="w-full h-12 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 </div>
 
                 <div className="space-y-2">
-                <label for="password" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                     Enter your Password
                     </label>
-                <input id="password" type="password" placeholder="Password"
+                <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password"
                     className="w-full h-12 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 <div className="text-right">
                     <a href="#" className="text-blue-500 text-sm">Forgot Password</a>
@@ -129,6 +168,10 @@ export default function Login() {
                     className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md transition duration-200">
                     Sign in
                 </button>
+
+                {/* <Link to="/chat" className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md transition duration-200">
+                    Sign 
+                </Link> */}
             </div>
             </form>
         </div>
