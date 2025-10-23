@@ -8,7 +8,7 @@ import os
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
-
+UPLOAD_FOLDER = 'uploads'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 DB_USER = os.getenv('DB_USER')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
@@ -57,7 +57,6 @@ def signup():
     return jsonify({"message": "Cuenta creada correctamente"}), 201
 
 @app.route('/chat', methods=['POST'])
-@cross_origin(origin='http://localhost:3000')
 def chat():
     data = request.get_json()
     message = data.get('message')
@@ -72,4 +71,48 @@ def chat():
         
     
     return jsonify({"response": response.text})
+ 
+ 
+@app.route('/upload', methods=['POST'])
+def upload_documents():
+    processed_documents = []
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+        
+    try:
+        uploaded_files = request.files.getlist('documents')
+        print(f"Archivos recibidos: {len(uploaded_files)}")
+        
+        for file in uploaded_files:
+            if file.filename:
+                file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+                print(f"Guardando: {file.filename}")
+                file.save(file_path) 
+                processed_documents.append({
+                    "original_name": file.filename,
+                    "size": os.path.getsize(file_path),
+                    "type": file.content_type,
+                    "chunks": 0,
+                    "status": "processed"
+                })
+        
+        return jsonify({"message": "Files received",
+                        "documents": processed_documents }), 200
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({"error": f"Upload failed: {str(e)}"}), 500
     
+# @app.route('/delete/<int:doc_id>')
+# def delete_documents(doc_id):
+#     try:
+#         # Aquí eliminas el documento de tu base de datos y sistema de embeddings
+#         print(f"Deleting document with ID: {doc_id}")
+        
+#         # Simulamos eliminación exitosa
+#         return jsonify({
+#             "message": f"Document {doc_id} deleted successfully"
+#         }), 200
+        
+#     except Exception as e:
+#         return jsonify({"error": f"Delete failed: {str(e)}"}), 500

@@ -12,11 +12,9 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Relación con chats
     chats = db.relationship('Chat', backref='user', cascade='all, delete-orphan', lazy=True)
     sessions = db.relationship('Session', backref='user', cascade='all, delete-orphan', lazy=True)
 
-    # ------------------ MÉTODOS ------------------
     def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)
 
@@ -24,18 +22,17 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
 
-# ------------------ MODELO CHATS ------------------
 class Chat(db.Model):
     __tablename__ = 'chats'
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     message = db.Column(db.Text, nullable=False)
-    role = db.Column(db.String(10), nullable=False)  # 'user' o 'assistant'
+    role = db.Column(db.String(10), nullable=False)  
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-# ------------------ MODELO SESSIONS ------------------
+
 class Session(db.Model):
     __tablename__ = 'sessions'
 
